@@ -8,6 +8,7 @@ app.get('/', (req, res) => {
 
 io.on('connection', socket => {
   console.log(`User Connected in sockect ${socket.id}`)
+  console.log(`User Name: ${socket.handshake.query.user}`)
 
   socket.on('disconnect', () => {
     console.log(`User Disconnect in sockect ${socket.id}`)
@@ -15,13 +16,17 @@ io.on('connection', socket => {
 
   socket.on('chat message', msg => {
     console.log(`Message: "${msg}" from ${socket.id}`)
-    const resMsg = `socket ${socket.id} said: "${msg}"`
+    const resMsg = msg
     const ackFunciton = ackMsg => {
         console.log(`${ackMsg} from ${socket.id}`)
     }
-    socket.emit('chat message', resMsg, ackFunciton) // send message only to this socket
-    // io.emit('chat message', resMsg) // send resMsg to all sockets
-    // socket.broadcast.emit('chat message', resMsg) // send resMsg to all sockets (except this one)
+    io.emit('chat message', {
+        msg: resMsg,
+        senderId: socket.id,
+        user: socket.handshake.query.user
+    }) // send resMsg to all sockets
+    // socket.emit('chat message', {msg: resMsg}, ackFunciton) // send message only to this socket
+    // socket.broadcast.emit('chat message', {msg: resMsg}) // send resMsg to all sockets (except this one)
   })
 
 })
